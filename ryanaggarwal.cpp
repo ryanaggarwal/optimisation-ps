@@ -432,25 +432,6 @@ if(numNodes<=8){
     cout<<endl;
 
 
-    map<pair<int,int>,int>mp;
-    for(int i=0;i<minimumSpanningTree.size();i++){
-        vector<pair<int,int>>v=minimumSpanningTree[i];
-        for(auto pr:v){
-            mp[{i,pr.first}]=1;
-        }
-    }
-    int n;cin>>n;
-    int a[n+1]={0};
-    for(int i=1;i<=n;i++){
-        cin>>a[i];
-    }
-    int cnt=0;
-    for(int i=1;i<=n-1;i++){
-        if(mp[{a[i],a[i+1]}]==0){
-            cnt++;
-        }
-    }
-    cout<<cnt<<endl;
 
 
     
