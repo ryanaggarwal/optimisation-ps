@@ -1,3 +1,3 @@
 # optimisation-ps
-g++ filename.cpp -o outputname
+g++ ryanaggarwal.cpp -o outputname
 ./outputname
