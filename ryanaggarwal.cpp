@@ -66,6 +66,25 @@ void dijkstra(vector<int>&fuelStations, vector<vector<pair<int, int>>> &mstGraph
         }
     }
 }
+void dfsCheck(int vertex,vector<bool>&visited, vector<bool>& finall,vector<vector<pair<int,int>>> &minimumSpanningTree
+    ,int fuelstation,vector<pair<int,int>>&mindist, set<int> &houseHub, vector<int>&subtree){
+
+    visited[vertex] = true;
+    for( auto& pr : minimumSpanningTree[vertex])
+    {
+        int child=pr.first;
+        if(visited[child])continue;
+        int fuelstation_child=mindist[child].second;
+        if(fuelstation_child!=fuelstation)continue;
+        dfsCheck(child,visited, finall,minimumSpanningTree,fuelstation,mindist, houseHub, subtree);
+        subtree[vertex]+= subtree[child];
+    }
+    if (subtree[vertex] == 0)
+    {
+        finall[vertex] =true;
+    }
+}
+
 
 bool dfs(int vertex,vector<bool>&visited,vector<vector<pair<int , int >>> &minimumSpanningTree,
     vector<int>&parent,int &ans,int fuelstation,vector<pair<int,int>>&mindist,int &currentfuel,map<int,int>&map_ifhub,vector<int>&visited_hubs,map<int,int>&map_ifhouse,vector<int>&visited_houses,map<int,int>&map_house_hub){
@@ -82,8 +101,6 @@ bool dfs(int vertex,vector<bool>&visited,vector<vector<pair<int , int >>> &minim
         int child=pr.first;
         int wt=pr.second;
         if(visited[child])continue;
-        //so now we are at a child which is not visited
-        //we have to also check that this child belongs to this fuel station
         int fuelstation_child=mindist[child].second;
         if(fuelstation_child!=fuelstation)continue;
         if(currentfuel-wt<mindist[child].first){
@@ -91,7 +108,6 @@ bool dfs(int vertex,vector<bool>&visited,vector<vector<pair<int , int >>> &minim
             done=0;
         }
         else{
-            //we can go to the child of the vertex,so we will call the dfs to the children
             parent[child] = vertex;
             ans+=2*wt;
             currentfuel -= wt;
@@ -138,16 +154,26 @@ int  main() {
     int  numDeliveries, numNodes, numRoads, numFuelStations, fuelCapacity;
     cin >> numDeliveries >> numNodes >> numRoads >> numFuelStations >> fuelCapacity;
     vector<int > deliveryHubs(numDeliveries);
-    for (int  i = 0; i < numDeliveries; ++i) 
+    set<int> s, houseAndHubs;
+
+    for (int  i = 0; i < numDeliveries; ++i){ 
         cin >> deliveryHubs[i];
+        houseAndHubs.insert(deliveryHubs[i]);
+        s.insert(deliveryHubs[i]);
+    }
 
     vector<int > deliveryHouses(numDeliveries);
-    for (int  i = 0; i < numDeliveries; ++i) 
+    for (int  i = 0; i < numDeliveries; ++i){ 
         cin >> deliveryHouses[i];
+        houseAndHubs.insert(deliveryHouses[i]);
+        s.insert(deliveryHouses[i]);
+    }
 
     vector<int > fuelStations(numFuelStations);
-    for (int  i = 0; i < numFuelStations; ++i) 
+    for (int  i = 0; i < numFuelStations; ++i){ 
         cin >> fuelStations[i];
+        s.insert(fuelStations[i]);
+    }
 
     vector<Edge> edges;
     for (int  i = 0; i < numRoads; ++i) {
@@ -219,12 +245,26 @@ int  main() {
     }
 
     vector<int>petrol=fuelStations;//same vector hai
-    //we will first go on the first fuel station and then we will go on the second one and so on
 
 
     for(int i = 0; i < petrol.size(); i++)
     {
         vector<bool> visited(numNodes,false);
+
+
+        vector<int>subtree(numNodes,1);
+        vector<bool> visitedDum(numNodes , false);
+
+        for(int j = 0; j < numNodes; j++)
+        {
+            if (houseAndHubs.count(j) == 0)
+            {
+                subtree[j] = 0;
+            }
+        }
+
+        dfsCheck(fuelStations[i], visitedDum,visited,minimumSpanningTree,fuelStations[i],minDist,houseAndHubs, subtree);
+
         while(1){
 
             for(int k = 0; k < numNodes; k++)
@@ -242,10 +282,8 @@ int  main() {
             }
         }
             for(auto e:vec){
-                //cout<<e<<" ";
                 path.push_back(e);
             }
-            //cout<<endl;
             vec.clear();
             if(i+1==petrol.size())break;
 
@@ -267,9 +305,7 @@ int  main() {
             reverse(temp.begin(),temp.end());
             for(auto e:temp){
                 path.push_back(e);
-                //cout<<e<<" ";
             }
-            //cout<<endl;
     }
     cout<<(2*path.size())-1<<endl;
     for(int i=0;i<path.size();i++){
